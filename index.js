@@ -1,9 +1,7 @@
 fetch('menu.json')
   .then(response => response.json())
   .then(data => {
-   // Do something with your data
-    console.log(data);
-    renderItems(data);
+  renderItems(data);
   });
 
 const Theme = {
@@ -23,8 +21,7 @@ if (storedTheme) {
 
 switchBtn.addEventListener('click', function (event) {
   const value = event.target.checked;
-  console.log(value);
-  if (value) {
+    if (value) {
     bodyEl.classList.remove(Theme.LIGHT);
     bodyEl.classList.add(Theme.DARK);
     localStorage.setItem('theme', Theme.DARK);
@@ -112,7 +109,6 @@ function renderItems(items) {
 
     result.push(liEl);
   }
-  console.log(result)
   mainUl.append(...result);
 }
 
