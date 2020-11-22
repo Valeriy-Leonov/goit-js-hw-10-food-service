@@ -1,100 +1,119 @@
-console.log('start')
 fetch('menu.json')
   .then(response => response.json())
   .then(data => {
    // Do something with your data
-   console.log(data);
+    console.log(data);
+    renderItems(data);
   });
 
-
-const ulEl = document.querySelector('.gallery.js-gallery');
-const modalWindow = document.querySelector('.lightbox.js-lightbox');
-const modalImg = document.querySelector('.lightbox__image');
-const modalCloseBtn = document.querySelector('.lightbox__button');
-const modalOverlay = document.querySelector('.lightbox__overlay');
+const Theme = {
+  LIGHT: 'light-theme',
+  DARK: 'dark-theme',
+};
+  
+const switchBtn = document.querySelector('#theme-switch-toggle');
 const bodyEl = document.querySelector('body');
+const mainUl = document.querySelector('.js-menu');
 
-function closeModal(event) {
-  modalImg.src = '';
-  modalImg.alt = '';
-  modalWindow.classList.remove('is-open');
+const storedTheme = localStorage.getItem('theme');
+if (storedTheme) { 
+  bodyEl.classList.add(storedTheme);
+  switchBtn.checked = storedTheme === Theme.DARK;
 }
 
-function switchImg(side) {
-  if (side.includes('Left')) {
-    for (let i in galleryItems) {
-      i = Number(i);
-      const currentValue = galleryItems[i];
-      if (currentValue.original === modalImg.src) {
-        if (!i) {
-          modalImg.src = galleryItems[galleryItems.length - 1].original;
-          modalImg.alt = galleryItems[galleryItems.length - 1].description;
-        } else {
-          modalImg.src = galleryItems[i - 1].original;
-          modalImg.alt = galleryItems[i - 1].description;
-        }
-        break;
-      }
-    }
+switchBtn.addEventListener('click', function (event) {
+  const value = event.target.checked;
+  console.log(value);
+  if (value) {
+    bodyEl.classList.remove(Theme.LIGHT);
+    bodyEl.classList.add(Theme.DARK);
+    localStorage.setItem('theme', Theme.DARK);
+
   } else {
-    for (let i in galleryItems) {
-      i = Number(i);
-      const currentValue = galleryItems[i];
-      if (currentValue.original === modalImg.src) {
-        if (i === galleryItems.length - 1) {
-          modalImg.src = galleryItems[0].original;
-          modalImg.alt = galleryItems[0].description;
-        } else {
-          modalImg.src = galleryItems[i + 1].original;
-          modalImg.alt = galleryItems[i + 1].description;
-        }
-        break;
-      }
-    }
-  }
-}
+    bodyEl.classList.remove(Theme.DARK);
+    bodyEl.classList.add(Theme.LIGHT);
+    localStorage.setItem('theme', Theme.LIGHT);
+   }
+ })
 
-function keyPress(event) {
-  if (event.key === 'Escape') {
-    closeModal(event);
-  } else if (['ArrowLeft', 'ArrowRight'].includes(event.key) && modalImg.src) {
-    switchImg(event.key);
-  }
-}
 
-modalCloseBtn.addEventListener('click', closeModal);
-modalOverlay.addEventListener('click', closeModal);
-bodyEl.addEventListener('keyup', keyPress);
 
-function renderGalleryItems(items) {
+function renderItems(items) {
   const result = [];
   for (let item of items) {
     const liEl = document.createElement('li');
-    liEl.classList.add('gallery__item');
-
-    const aEl = document.createElement('a');
-    aEl.classList.add('gallery__link');
-    aEl.href = item.preview;
+    liEl.classList.add('menu__item');
+  
+    const articleEl = document.createElement('article');
+    articleEl.classList.add('card');
+    liEl.append(articleEl);
 
     const imgEl = document.createElement('img');
-    imgEl.classList.add('gallery__image');
-    imgEl.src = item.preview;
-    imgEl.dataset.source = item.original;
-    imgEl.alt = item.description;
+    imgEl.classList.add('card__image');
+    imgEl.src = item.image;
+    imgEl.dataset.source = item.id;
+    imgEl.alt = item.name;
 
-    aEl.appendChild(imgEl);
-    liEl.appendChild(aEl);
-    aEl.addEventListener('click', event => {
-      event.preventDefault();
-      modalImg.src = imgEl.dataset.source;
-      modalImg.alt = imgEl.alt;
-      modalWindow.classList.add('is-open');
-    });
+    const divEl = document.createElement('div');
+    divEl.classList.add('card__content');
+    
+    const h2El = document.createElement('h2');
+    h2El.classList.add('card__name');
+    
+    const h2ElText = document.createTextNode(item.name);
+    h2El.append(h2ElText);
+
+    const p1El = document.createElement('p');
+    p1El.classList.add('card__price');
+      
+    const iEl = document.createElement('i');
+    iEl.classList.add('material-icons');
+
+    const iElText = document.createTextNode('monetization_on');
+    const p1ElText = document.createTextNode(`${item.price} кредитов`);
+    iEl.append(iElText);
+    p1El.append(iEl, p1ElText);
+     
+    const p2El = document.createElement('p');
+    p2El.classList.add('card__descr');
+    const p2ElText = document.createTextNode(item.description);
+    p2El.append(p2ElText);
+    
+    const ulEl = document.createElement('ul');
+    ulEl.classList.add('tag-list');
+
+    divEl.append(h2El, p1El, p2El, ulEl);
+
+    const subItems = [];
+
+    for (let subItem of item.ingredients) { 
+      const subLiEl = document.createElement('li');
+      subLiEl.classList.add('tag-list__item');
+
+      const subLiElText = document.createTextNode(subItem);
+      subLiEl.append(subLiElText);
+      subItems.push(subLiEl);
+    }
+
+    ulEl.append(...subItems);
+
+    const buttonEl = document.createElement('button');
+    buttonEl.className += 'card__button button';
+
+    const i2El = document.createElement('i');
+    i2El.className += 'material-icons button__icon';
+
+    const i2ElText = document.createTextNode('shopping_cart');
+    const buttonElText = document.createTextNode('В корзину');
+    i2El.append(i2ElText);
+    buttonEl.append(i2El, buttonElText);
+    
+    articleEl.append(imgEl, divEl, buttonEl);
 
     result.push(liEl);
   }
-
-  ulEl.append(...result);
+  console.log(result)
+  mainUl.append(...result);
 }
 
-renderGalleryItems(galleryItems);
+
